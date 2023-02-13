@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('gitlab_pull') {
+            steps {
+                git credentialsId: '62f11cbf-0401-4cea-abee-7678d7b738ee', poll: false, url: 'git@gitlab2.ligeit.com:digital_test/airtest_uc.git'
+            }
+        }
+        stage('pytest_run') {
+            steps {
+                sh '''chmod -R 777 ./*
+                    docker run --rm --name airtest_ui -v /root/jenkins-data/workspace/airtest_ui:/home/uc f9672247ae38 python main_app.py'''
+            }
+        }
+        stage('allure_report') {
+            steps {
+                allure includeProperties: false, jdk: '', results: [[path: 'reports']]
+            }
+        }
+    }
+}
